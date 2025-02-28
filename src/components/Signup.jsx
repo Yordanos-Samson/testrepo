@@ -1,82 +1,158 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { UserAuth } from "../context/AuthContext";
+"use client"
+
+import { Link, useNavigate } from "react-router-dom"
+import { useState } from "react"
+import { useAuth } from "../context/AuthContext"
 
 const Signup = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("doctor"); // Default role is "doctor"
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // Use boolean for loading state
-  const { session, signUpNewUser } = UserAuth(); 
-  console.log(session);// Get signUpNewUser from context
-  const navigate = useNavigate();
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [fullName, setFullName] = useState("")
+  const [role, setRole] = useState("doctor")
+  const [specialty, setSpecialty] = useState("")
+  const [description, setDescription] = useState("")
+  const [paymentRequiredAmount, setPaymentRequiredAmount] = useState(0)
+  const [profileUrl, setProfileUrl] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const { signUpNewUser } = useAuth()
+  const navigate = useNavigate()
 
   const handleSignUp = async (e) => {
-    e.preventDefault();
-    setLoading(true); // Start loading
+    e.preventDefault()
+    setLoading(true)
 
     try {
-      // Call signUpNewUser with email, password, and selected role
-      const result = await signUpNewUser(email, password, role);
+      const additionalInfo = {
+        fullName,
+        profileUrl,
+        ...(role === "doctor" && {
+          specialty,
+          description,
+          paymentRequiredAmount: Number.parseFloat(paymentRequiredAmount),
+        }),
+      }
+
+      const result = await signUpNewUser(email, password, role, additionalInfo)
 
       if (result.success) {
-        navigate("/signin"); // Redirect to sign-in page after successful sign-up
+        navigate("/signin")
       } else {
-        setError(result.error.message || "Sign-up failed."); // Show error message
+        setError(result.error.message || "Sign-up failed.")
       }
     } catch (err) {
-      setError("An unexpected error occurred.",err); // Handle unexpected errors
+      setError("An unexpected error occurred.")
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div>
-      <form onSubmit={handleSignUp} className="max-w-md m-auto pt-24">
-        <h2 className="font-bold pb-2">Signup</h2>
-        <div className="flex flex-col py-4">
-          {/* Email Input */}
+    <div className="max-w-md mx-auto mt-10">
+      <form onSubmit={handleSignUp} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
+        <div className="mb-4">
           <input
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            className="p-3 mt-6"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
-          {/* Password Input */}
+        </div>
+        <div className="mb-4">
           <input
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="p-3 mt-6"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
             type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
-          {/* Role Selection Dropdown */}
+        </div>
+        <div className="mb-4">
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="text"
+            placeholder="Full Name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-4">
           <select
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="p-3 mt-6"
             required
           >
             <option value="doctor">Doctor</option>
             <option value="admin">Admin</option>
           </select>
-          {/* Submit Button */}
-          <button type="submit" disabled={loading} className="mt-6 w-full">
-            {loading ? "Signing up..." : "Sign up"} {/* Show loading text */}
-          </button>
-          {/* Error Message */}
-          {error && <p className="text-red-600 text-center pt-4">{error}</p>}
         </div>
-        {/* Link to Sign In */}
-        <p className="mt-6">
-          Already have an account? <Link to="/signin">Sign in</Link>
-        </p>
+        <div className="mb-4">
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            type="url"
+            placeholder="Profile URL (optional)"
+            value={profileUrl}
+            onChange={(e) => setProfileUrl(e.target.value)}
+          />
+        </div>
+        {role === "doctor" && (
+          <>
+            <div className="mb-4">
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                type="text"
+                placeholder="Specialty"
+                value={specialty}
+                onChange={(e) => setSpecialty(e.target.value)}
+              />
+            </div>
+            <div className="mb-4">
+              <textarea
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                placeholder="Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            <div className="mb-6">
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="Payment Required Amount"
+                value={paymentRequiredAmount}
+                onChange={(e) => setPaymentRequiredAmount(e.target.value)}
+              />
+            </div>
+          </>
+        )}
+        <div className="flex items-center justify-between">
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Signing up..." : "Sign Up"}
+          </button>
+        </div>
+        {error && <p className="text-red-500 text-xs italic mt-4">{error}</p>}
       </form>
+      <p className="text-center text-gray-500 text-xs">
+        Already have an account?{" "}
+        <Link to="/signin" className="text-blue-500 hover:text-blue-800">
+          Sign In
+        </Link>
+      </p>
     </div>
-  );
-};
+  )
+}
 
-export default Signup;
+export default Signup
+

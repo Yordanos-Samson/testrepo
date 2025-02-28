@@ -1,13 +1,7 @@
-
-
-
-
-import { UserAuth } from "../context/AuthContext";
+import { UserAuth } from "../context/AuthContext"
 
 const DoctorDashboard = () => {
-  const { session } = UserAuth();
-
-  
+  const { session } = UserAuth()
 
   return (
     <div>
@@ -15,7 +9,8 @@ const DoctorDashboard = () => {
       <p>Welcome, {session?.user?.email}!</p>
       {/* Add doctor-specific functionalities here */}
     </div>
-  );
-};
+  )
+}
 
-export default DoctorDashboard;
+export default DoctorDashboard
+

@@ -1,30 +1,25 @@
-import { UserAuth } from "../context/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom"
+import { useAuth } from "../context/AuthContext"
+import PropTypes from "prop-types"
 
-import PropTypes from 'prop-types';
+const PrivateRoute = ({ children, allowedRoles }) => {
+  const { user } = useAuth()
 
-const PrivateRoute = ({ children }) => {
-  const { session } = UserAuth();
-
-  if (session === undefined) {
-    return <div>Loading...</div>;
+  if (!user) {
+    return <Navigate to="/signin" replace />
   }
 
-  if (!session) {
-    return <Navigate to="/signin" />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />
   }
 
-  // Redirect based on user role
-  if (session.role === "admin") {
-    return <Navigate to="/admin-dashboard" />;
-  } else if (session.role === "doctor") {
-    return <>{children}</>; // Default to doctor dashboard
-  }
-
-  return <Navigate to="/signup" />;
-};
+  return children
+}
 
 PrivateRoute.propTypes = {
   children: PropTypes.node.isRequired,
-};
-export default PrivateRoute;
+  allowedRoles: PropTypes.arrayOf(PropTypes.string),
+}
+
+export default PrivateRoute
+
